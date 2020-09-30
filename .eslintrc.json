@@ -1,0 +1,21 @@
+{
+  "extends": [
+    "standard-with-typescript",
+    "plugin:react-hooks/recommended"
+  ],
+  "parserOptions": {
+      "project": "./tsconfig.eslint.json"
+  },
+  "rules": {
+    "@typescript-eslint/array-type": "off",
+    "@typescript-eslint/explicit-function-return-type": "off",
+    "@typescript-eslint/no-dynamic-delete": "off",
+    "@typescript-eslint/no-empty-interface": "off",
+    "@typescript-eslint/no-extraneous-class": "off",
+    "@typescript-eslint/no-non-null-assertion": "off",
+    "@typescript-eslint/prefer-readonly": "off",
+    "@typescript-eslint/promise-function-async": "off",
+    "@typescript-eslint/return-await": ["error", "in-try-catch"],
+    "@typescript-eslint/strict-boolean-expressions": ["off"]
+  }
+}
