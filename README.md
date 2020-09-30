@@ -142,7 +142,7 @@ const SimpleComponent: React.FC = props => {
   const [count, updateCount] = useAndUpdateDerivedStore(simpleStore, s => s.count, (count, s) => ({ ...s, count }))
   const onClick = useCallback(() => updateCount(count + 1), [updateCount])
   return <>
-    <Counter count={simpleState.count}>
+    <Counter count={count}>
     <button onClick={onClick}>Increment</button>
   </>
 }
@@ -154,7 +154,7 @@ const SimpleComponent: React.FC = props => {
   const [count, updateCount] = useAndUpdateDerivedStore(simpleStore, 'count')
   const onClick = useCallback(() => updateCount(count + 1), [updateCount])
   return <>
-    <Counter count={simpleState.count}>
+    <Counter count={count}>
     <button onClick={onClick}>Increment</button>
   </>
 }
