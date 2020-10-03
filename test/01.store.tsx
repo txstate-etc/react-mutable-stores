@@ -21,6 +21,16 @@ const CounterButton: React.FC = props => {
   )
 }
 
+let once = true
+const RacyCounterButton: React.FC = props => {
+  const count = useDerivedStore(counterStore, 'count')
+  if (once) counterStore.incrementCount()
+  once = false
+  return (
+    <button>{count}</button>
+  )
+}
+
 test('loads and displays zero', async () => {
   render(<CounterButton />)
   const button = await waitFor(() => screen.getByRole('button'))
@@ -48,4 +58,15 @@ test('buttons share state', async () => {
   fireEvent.click(button2)
   expect(button1).toHaveTextContent('2')
   expect(button2).toHaveTextContent('2')
+})
+
+test('should not have a race condition when the store is updated during a render', async () => {
+  counterStore.reset()
+  render(<RacyCounterButton />)
+  const button = await waitFor(() => screen.getByRole('button'))
+  expect(button).toHaveTextContent('1')
+})
+
+test('everything is unmounted so there should be no subscribers on counterStore', async () => {
+  expect(counterStore.observers.length).toEqual(0)
 })

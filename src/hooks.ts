@@ -13,10 +13,8 @@ export type UsableStoreStateType<StoreType> = StoreType extends { value: infer S
 
 export function useAndUpdateStore<StoreType extends UsableStore<any>> (store: StoreType): [UsableStoreStateType<StoreType>, (value: UsableStoreStateType<StoreType>) => void] {
   const [value, setState] = useState(store.value)
-  useEffect(() => {
-    const sub = store.pipe(skip(1)).subscribe(s => setState(s))
-    return () => sub.unsubscribe()
-  }, [store])
+  const sub = useMemo(() => store.pipe(skip(1)).subscribe(s => setState(s)), [store])
+  useEffect(() => () => sub.unsubscribe(), [sub])
   const newSetState = useCallback((state: UsableStoreStateType<StoreType>) => store.next(state), [store])
   return [value, newSetState]
 }

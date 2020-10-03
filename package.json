@@ -1,6 +1,6 @@
 {
   "name": "react-mutable-stores",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Concepts from rxjs and Svelte to make handling state in React simple and powerful.",
   "main": "lib/index.js",
   "module": "lib-esm/index.js",
@@ -27,7 +27,7 @@
     "@types/jest": "^26.0.14",
     "@types/lodash-es": "^4.17.3",
     "@types/node": "^14.10.1",
-    "@types/react": "^16.9.49",
+    "@types/react": "^16.9.50",
     "@typescript-eslint/eslint-plugin": "^4.1.1",
     "eslint": "^7.9.0",
     "eslint-config-standard-with-typescript": "^19.0.1",
