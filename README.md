@@ -6,13 +6,19 @@ simple and powerful.
 This library attempts to be a comprehensive solution to shared state management in
 React, similar to projects like Redux but much simpler to use and to reason about.
 
-A store is an extension of RxJS' BehaviorSubject, but it only sends updates to
-subscribers when its value actually changes. If `next()` is invoked twice with
-different but identical objects, the second invocation will be ignored and
-subscribers will not be notified.
+A store is conceptually similar to RxJS' BehaviorSubject and implements a subset of
+its functionality. However, it only sends updates to subscribers when the state
+actually changes. If `next()` is invoked twice with different but identical objects,
+the second invocation will be ignored and subscribers will not be notified. RxJS does
+not do the extra work of checking for deep equality and would always notify subscribers
+upon `next()`.
 
 Also included in this library is a set of React hooks that make interacting with a
 store easy, clear, and efficient.
+
+### Note about lodash
+This library uses `lodash-es` for optimal tree-shaking. If you use lodash in your project,
+consider using `lodash-es` to avoid redundant code in your bundle.
 
 ## Store
 A store is intended to contain simple state that is easy to clone. By default, you
@@ -56,8 +62,8 @@ store.updateFoo('baz')
 This way your store controls all the business logic and your components can be truly
 reactive.
 
-Note that `this.value` contains the current version of the store. That is inherited
-from `BehaviorSubject`.
+Note that `this.value` contains the current version of the store. This was copied from
+RxJS' `BehaviorSubject` to maintain compatibility.
 
 ### Asynchronous mutations
 Mutation methods become even more powerful when you do asynchronous updates. All of
@@ -198,9 +204,11 @@ const SimpleComponent: React.FC = props => {
 ## Advanced Usage / Tips
 ### lodash.get & set
 Anything in this library that accepts a property name uses `lodash.get` and `lodash.set`
-so that you can use dot-notation to go deeper into your state object.
+so that you can use dot-notation to go deeper into your state object. Typescript cannot
+infer types when you use use a dot-notation path, so you'll want to provide it as the
+generic.
 ```tsx
-const name = useDerivedStore(someStore, 'items[0].name')
+const name = useDerivedStore<string>(someStore, 'items[0].name')
 ```
 ### One-liners from Context
 Most of the hooks have another version for retrieving the store from a Context, just to
@@ -213,20 +221,29 @@ becomes
 ```tsx
 const state = useStoreFromContext(MyStoreContext)
 ```
-### BehaviorSubject
-The Store class extends BehaviorSubject from RxJS. So anything you can do with a
-BehaviorSubject you can do with a store, including subscribing without a hook, piping, etc.
+### RxJS BehaviorSubject
+Our hooks and our `DerivedStore` implementation are designed to be compatible with RxJS'
+`BehaviorSubject` in addition to our local implementation of `Store`. Anywhere you are
+being asked to provide a `Store`, you may provide a `BehaviorSubject` instead. This will
+allow you to unlock the full power of RxJS if you are doing something advanced. Keep
+in mind, if you use a `BehaviorSubject` instead of a `Store`, it will not check for
+inequality before notifying subscribers, which could lead to extra component renders or
+in rare cases, infinite render loops.
+
+### Use Store directly
+The `Store` class can be used without a hook to do things like logging or creating
+complicated event chains.
 ```typescript
 myStore.subscribe(state => console.log('myStore state change', state))
 ```
 ### DerivedStore
-You can also make a DerivedStore without a hook.
+You can also make a `DerivedStore` without a hook.
 ```typescript
 import { DerivedStore } from 'react-mutable-stores'
 const widthStore = new DerivedStore(globalStore, s => s.width)
 widthStore.subscribe(width => console.log('screen width changed', width))
 ```
-DerivedStores can be mutable if you provide a `setter` or use a property name. The
+`DerivedStore`s can be mutable if you provide a `setter` or use a property name. The
 `setter` will receive the new value and the current parent state and should return a new
 parent state.
 ```typescript
@@ -237,7 +254,7 @@ const widthStore = new DerivedStore(globalStore,
 widthStore.next(800)
 console.log(globalStore.value) // { ..., width: 800 }
 ```
-Providing a property name creates an appropriate setter by default.
+Providing a property name (or dot-separated path) creates an appropriate setter by default.
 ```typescript
 const widthStore = new DerivedStore(globalStore, 'width')
 widthStore.next(800)
@@ -247,6 +264,3 @@ console.log(globalStore.value) // { ..., width: 800 }
 This library is written in typescript, as are all the examples above. It goes to great
 lengths to ensure your types are automatically inferred as much as possible. You will
 typically want to specify a type for your Store state, as in the "Subclassing" example above.
-
-Everything is exported as an es6 module, which should be helpful for any React project
-since even pure javascript React projects use a precompiler like webpack.

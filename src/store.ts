@@ -1,13 +1,11 @@
-import { BehaviorSubject, Subscription } from 'rxjs'
-import { skip } from 'rxjs/operators'
 import equal from 'fast-deep-equal'
 import { get, setWith, clone, cloneDeep } from 'lodash-es'
-import { UsableStore } from './hooks'
+import { Subject, Subscription, UsableSubject } from './subject'
 
 interface StoreOptions {
   immutable?: boolean
 }
-export class Store<StateType> extends BehaviorSubject<StateType> {
+export class Store<StateType> extends Subject<StateType> {
   public options: StoreOptions
   protected valueclone: StateType
 
@@ -36,16 +34,16 @@ function immutableSet<InputType extends object, OutputType extends object> (stat
 }
 
 export interface DerivedStore<OutputType, InputType> extends Store<OutputType> {
-  new (): (store: UsableStore<OutputType>, getter: (state: InputType) => OutputType, setter?: (newvalue: OutputType, state: InputType) => InputType) => DerivedStore<OutputType, InputType>
-  new (): <Selector extends keyof InputType>(store: UsableStore<InputType[Selector]>, selector: Selector) => DerivedStore<InputType[Selector], InputType>
-  new (): (store: UsableStore<OutputType>, selector: string) => DerivedStore<OutputType, InputType>
+  new (): (store: Subject<OutputType>, getter: (state: InputType) => OutputType, setter?: (newvalue: OutputType, state: InputType) => InputType) => DerivedStore<OutputType, InputType>
+  new (): <Selector extends keyof InputType>(store: Subject<InputType[Selector]>, selector: Selector) => DerivedStore<InputType[Selector], InputType>
+  new (): (store: Subject<OutputType>, selector: string) => DerivedStore<OutputType, InputType>
 }
 export class DerivedStore<OutputType, InputType> extends Store<OutputType> {
-  protected parentStore: UsableStore<InputType>
+  protected parentStore: UsableSubject<InputType>
   protected setter: (value: OutputType, parentValue: InputType) => InputType
   protected subscription: Subscription
 
-  constructor (store: UsableStore<InputType>, getter: any, setter: any) {
+  constructor (store: UsableSubject<InputType>, getter: any, setter: any) {
     const options = {
       immutable: (store as Store<InputType>)?.options?.immutable
     }
@@ -58,8 +56,10 @@ export class DerivedStore<OutputType, InputType> extends Store<OutputType> {
     super(getter(store.value), options)
     this.parentStore = store
     this.setter = setter
-    this.subscription = store.pipe(skip(1)).subscribe(newval => {
-      super.next(getter(newval))
+    let skipfirst = true
+    this.subscription = store.subscribe(newval => {
+      if (skipfirst) skipfirst = false
+      else super.next(getter(newval))
     })
   }
 
