@@ -108,7 +108,7 @@ the BookStore from the example above:
 import { bookStore } from './bookstore'
 const BookDetail: React.FC = props => {
   const { error, book, loading } = useStore(bookStore)
-  const onClick = useCallback(() => bookStore.getBook(5), [bookStore])
+  const onClick = useCallback(() => bookStore.getBook(5), [])
   return <>
     {!!error &&
       <ErrorMessage>{error}</ErrorMessage>
@@ -174,9 +174,9 @@ import { simpleStore } from './simplestore'
 const SimpleComponent: React.FC = props => {
   const [count, updateCount] = useAndUpdateDerivedStore(simpleStore,
     s => s.count,
-    (count, s) => ({ ...s, count })
+    (count, s) => ({ ...s, count }) // this is the setter, returns a new state for the parent
   )
-  const onClick = useCallback(() => updateCount(count + 1), [updateCount])
+  const onClick = useCallback(() => updateCount(count + 1), [count, updateCount])
   return <>
     <Counter count={count}>
     <button onClick={onClick}>Increment</button>
@@ -188,7 +188,7 @@ If you're just updating a property, providing the property name is a little easi
 const simpleStore = require('./simplestore')
 const SimpleComponent: React.FC = props => {
   const [count, updateCount] = useAndUpdateDerivedStore(simpleStore, 'count')
-  const onClick = useCallback(() => updateCount(count + 1), [updateCount])
+  const onClick = useCallback(() => updateCount(count + 1), [count, updateCount])
   return <>
     <Counter count={count}>
     <button onClick={onClick}>Increment</button>

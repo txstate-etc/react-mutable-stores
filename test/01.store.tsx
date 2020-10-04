@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react'
 import { render, waitFor, screen, fireEvent } from '@testing-library/react'
 import '@testing-library/jest-dom/extend-expect'
-import { Store, useDerivedStore } from '../src'
+import { Store, useAndUpdateDerivedStore, useDerivedStore } from '../src'
 
 class CounterStore extends Store<{ count: number }> {
   reset () {
@@ -28,6 +28,14 @@ const RacyCounterButton: React.FC = props => {
   once = false
   return (
     <button>{count}</button>
+  )
+}
+
+const UpdateCounterButton: React.FC = props => {
+  const [count, updateCount] = useAndUpdateDerivedStore(counterStore, 'count')
+  const onClick = useCallback(() => updateCount(count + 1), [count, updateCount])
+  return (
+    <button onClick={onClick}>{count}</button>
   )
 }
 
@@ -58,6 +66,15 @@ test('buttons share state', async () => {
   fireEvent.click(button2)
   expect(button1).toHaveTextContent('2')
   expect(button2).toHaveTextContent('2')
+})
+
+test('increments on click using AndUpdate style', async () => {
+  counterStore.reset()
+  render(<UpdateCounterButton />)
+  const button = await waitFor(() => screen.getByRole('button'))
+
+  fireEvent.click(button)
+  expect(button).toHaveTextContent('1')
 })
 
 test('should not have a race condition when the store is updated during a render', async () => {
