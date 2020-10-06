@@ -167,7 +167,7 @@ const SimpleComponent: React.FC = props => {
     [simpleState, updateSimpleState]
   )
   return <>
-    <Counter count={simpleState.count}>
+    <Counter count={simpleState.count}/>
     <button onClick={onClick}>Increment</button>
   </>
 }
@@ -184,7 +184,7 @@ const SimpleComponent: React.FC = props => {
   )
   const onClick = useCallback(() => updateCount(count + 1), [count, updateCount])
   return <>
-    <Counter count={count}>
+    <Counter count={count}/>
     <button onClick={onClick}>Increment</button>
   </>
 }
@@ -196,7 +196,7 @@ const SimpleComponent: React.FC = props => {
   const [count, updateCount] = useAndUpdateDerivedStore(simpleStore, 'count')
   const onClick = useCallback(() => updateCount(count + 1), [count, updateCount])
   return <>
-    <Counter count={count}>
+    <Counter count={count}/>
     <button onClick={onClick}>Increment</button>
   </>
 }
@@ -225,11 +225,20 @@ const state = useStoreFromContext(MyStoreContext)
 Our hooks and our `DerivedStore` implementation are designed to be compatible with RxJS'
 `BehaviorSubject` in addition to our local implementation of `Store`. Anywhere you are
 being asked to provide a `Store`, you may provide a `BehaviorSubject` instead. This will
-allow you to unlock the full power of RxJS if you are doing something advanced. Keep
-in mind, if you use a `BehaviorSubject` instead of a `Store`, it will not check for
+allow you to unlock the full power of RxJS if you are doing something advanced.
+
+Keep in mind: if you use a `BehaviorSubject` instead of a `Store`, it will not check for
 inequality before notifying subscribers, which could lead to extra component renders or
 in rare cases, infinite render loops.
 
+You can also run a BehaviorSubject through a `DerivedStore` to regain the inequality checks.
+```tsx
+import { myBehaviorSubject } from './simplesubject'
+const SimpleComponent: React.FC = props => {
+  const { count } = useDerivedStore(myBehaviorSubject)
+  return <Counter count={count} />
+}
+```
 ### Use Store directly
 The `Store` class can be used without a hook to do things like logging or creating
 complicated event chains.

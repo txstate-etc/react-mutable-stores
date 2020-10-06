@@ -34,6 +34,7 @@ function immutableSet<InputType extends object, OutputType extends object> (stat
 }
 
 export interface DerivedStore<OutputType, InputType> extends Store<OutputType> {
+  new (): (store: Subject<OutputType>) => DerivedStore<OutputType, InputType>
   new (): (store: Subject<OutputType>, getter: (state: InputType) => OutputType, setter?: (newvalue: OutputType, state: InputType) => InputType) => DerivedStore<OutputType, InputType>
   new (): <Selector extends keyof InputType>(store: Subject<InputType[Selector]>, selector: Selector) => DerivedStore<InputType[Selector], InputType>
   new (): (store: Subject<OutputType>, selector: string) => DerivedStore<OutputType, InputType>
@@ -47,7 +48,10 @@ export class DerivedStore<OutputType, InputType> extends Store<OutputType> {
     const options = {
       immutable: (store as Store<InputType>)?.options?.immutable
     }
-    if (typeof getter === 'string') {
+    if (typeof getter === 'undefined') {
+      getter = (parentValue: any) => parentValue
+      setter = (value: any, parentValue: any) => value
+    } else if (typeof getter === 'string') {
       const accessor = getter
       getter = (parentValue: any) => get(parentValue, accessor)
       setter = (value: any, parentValue: any) => immutableSet(parentValue, accessor, value)

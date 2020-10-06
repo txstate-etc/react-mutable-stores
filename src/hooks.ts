@@ -39,9 +39,12 @@ export function useAndUpdateDerivedStore<OutputType, StoreType extends UsableSub
   store: StoreType,
   selector: string
 ): [OutputType, (value: OutputType) => void]
-export function useAndUpdateDerivedStore<StoreType extends UsableSubject<any>, OutputType> (store: StoreType, getter: any, setter?: any) {
+export function useAndUpdateDerivedStore<StoreType extends UsableSubject<any> = any> (
+  store: StoreType
+): [StoreType, (value: StoreType) => void]
+export function useAndUpdateDerivedStore<StoreType extends UsableSubject<any>, OutputType> (store: StoreType, getter?: any, setter?: any) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const derived = useMemo(() => new DerivedStore(store, getter, setter), [store, getter.toString(), (setter || '').toString()])
+  const derived = useMemo(() => new DerivedStore(store, getter, setter), [store, (getter ?? '').toString(), (setter ?? '').toString()])
   useEffect(() => {
     return () => derived.complete()
   }, [derived])
@@ -61,7 +64,10 @@ export function useAndUpdateDerivedStoreFromContext<OutputType, StoreType extend
   context: React.Context<StoreType>,
   selector: string
 ): [OutputType, (value: OutputType) => void]
-export function useAndUpdateDerivedStoreFromContext<StoreType extends UsableSubject<any>> (context: React.Context<StoreType>, getter: any, setter?: any) {
+export function useAndUpdateDerivedStoreFromContext<StoreType extends UsableSubject<any> = any> (
+  context: React.Context<StoreType>
+): [StoreType, (value: StoreType) => void]
+export function useAndUpdateDerivedStoreFromContext<StoreType extends UsableSubject<any>> (context: React.Context<StoreType>, getter?: any, setter?: any) {
   const store = useContext(context)
   return useAndUpdateDerivedStore(store, getter, setter)
 }
@@ -78,7 +84,10 @@ export function useDerivedStore<OutputType, StoreType extends UsableSubject<any>
   store: StoreType,
   selector: string
 ): OutputType
-export function useDerivedStore<StoreType extends UsableSubject<any> = any> (store: StoreType, getter: any) {
+export function useDerivedStore<StoreType extends UsableSubject<any> = any> (
+  store: StoreType
+): StoreType
+export function useDerivedStore<StoreType extends UsableSubject<any> = any> (store: StoreType, getter?: any) {
   const [value] = useAndUpdateDerivedStore(store, getter)
   return value
 }
@@ -95,7 +104,10 @@ export function useDerivedStoreFromContext<OutputType, StoreType extends UsableS
   context: React.Context<StoreType>,
   selector: string
 ): OutputType
-export function useDerivedStoreFromContext<StoreType extends UsableSubject<any> = any> (context: React.Context<StoreType>, getter: any) {
+export function useDerivedStoreFromContext<StoreType extends UsableSubject<any> = any> (
+  context: React.Context<StoreType>
+): StoreType
+export function useDerivedStoreFromContext<StoreType extends UsableSubject<any> = any> (context: React.Context<StoreType>, getter?: any) {
   const store = useContext(context)
   return useDerivedStore(store, getter)
 }
