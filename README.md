@@ -16,26 +16,21 @@ upon `next()`.
 Also included in this library is a set of React hooks that make interacting with a
 store easy, clear, and efficient.
 
-### Note about lodash
-This library uses `lodash-es` for optimal tree-shaking. If you use lodash in your project,
-consider using `lodash-es` to avoid redundant code in your bundle.
-
 ## Store
 A store is intended to contain simple state that is easy to clone. By default, you
 are expected to update the store with fresh or cloned objects:
 ```typescript
 const initialState = { foo: 'bar', more: 'state' }
 const store = new Store(initialState)
-this.next({ ...initialState, foo: 'baz' })
+store.next({ ...initialState, foo: 'baz' })
 ```
-If it's not convenient to clone your own objects, the store can do it for you
-if you set the `immutable` option to `false` (this tells the store that you will
-not be passing it immutable objects):
+If it's not convenient to clone your own objects, you can use a `SafeStore` instead,
+which will allow you to mutate your state and then call next on it:
 ```typescript
 const initialState = { foo: 'bar', more: 'state' }
-const store = new Store(initialState, { immutable: false })
+const store = new SafeStore(initialState)
 initialState.foo = 'baz'
-this.next(initialState) // without immutable: false, this would not send to subscribers
+store.next(initialState) // with a regular Store, this would not notify subscribers
 ```
 This will work on any objects that are Cloneable according to the lodash.clone()
 documentation.
@@ -68,7 +63,8 @@ RxJS' `BehaviorSubject` to maintain compatibility.
 ### Asynchronous mutations
 Mutation methods become even more powerful when you do asynchronous updates. All of
 your asynchronous code can be encapsulated in a single method, making it much easier
-to think about how you want to handle race conditions and errors.
+to think about how you want to handle race conditions and errors. Redux toolkit would
+call these `thunk` functions, but here they are just another method.
 ```typescript
 interface BookState {
   loading?: boolean
@@ -131,6 +127,10 @@ const BookDetail: React.FC = props => {
 }
 ```
 ### useDerivedStore
+Frequently, individual components only need to subscribe to a small portion of a store.
+If you've used Redux, it has the `useSelector` hook to deal with this. This library
+uses the concept of a derived store instead.
+
 A derived store is a store that derives its state from another store. useDerivedStore
 is a hook that implicitly creates a derived store for you, and then only renders your
 component when the derived state changes, instead of every time the original store changes.
@@ -203,10 +203,10 @@ const SimpleComponent: React.FC = props => {
 ```
 ## Advanced Usage / Tips
 ### lodash.get & set
-Anything in this library that accepts a property name uses `lodash.get` and `lodash.set`
-so that you can use dot-notation to go deeper into your state object. Typescript cannot
-infer types when you use use a dot-notation path, so you'll want to provide it as the
-generic.
+Anything in this library that accepts a property name also accepts a dot-notation style
+string (compatible with `lodash.get` and `lodash.set`), so that you can go deeper into
+your state object. Typescript cannot infer types when you use use a dot-notation path, so
+you'll want to provide it as the generic.
 ```tsx
 const name = useDerivedStore<string>(someStore, 'items[0].name')
 ```
