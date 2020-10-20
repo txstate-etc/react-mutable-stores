@@ -1,6 +1,7 @@
 export * from './derivedhooks'
 export * from './derivedstore'
 export * from './hooks'
+export * from './watchedstore'
 export * from './safestore'
 export * from './store'
 export * from './subject'

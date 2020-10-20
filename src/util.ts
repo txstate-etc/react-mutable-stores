@@ -9,7 +9,7 @@ const pathSeperatorRegex = /\[\s*(['"])(.*?)\1\s*\]|(?:^|\.)\s*(\w+)\s*(?=\.|\[|
 export function get<ReturnType = any> (root: any, path: string | number | (string|number)[], defaultValue?: ReturnType) {
   try {
     if (isArray(path)) path = "['" + path.join("']['") + "']"
-    if (path in root || typeof path === 'number') return root[path as string]
+    else if (path in root || typeof path === 'number') return root[path as string]
     var obj = root
     path.replace(
       pathSeperatorRegex,
@@ -29,10 +29,10 @@ export function set<T = ObjectOrArray> (
   path: string | number | Array<string | number>,
   newValue: unknown
 ): T {
-  if (isArray(path)) path = "['" + path.join("']['") + "']"
   const newRoot: any = clone(root)
 
-  if (path in newRoot || typeof path === 'number') {
+  if (isArray(path)) path = "['" + path.join("']['") + "']"
+  else if (path in newRoot || typeof path === 'number') {
     // Just set it directly: no need to loop
     newRoot[path as string] = newValue
     return newRoot

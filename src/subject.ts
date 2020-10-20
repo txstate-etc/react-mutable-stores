@@ -11,16 +11,24 @@ export interface UsableSubject<StateType> {
 }
 
 export class Subject<StateType> implements UsableSubject<StateType> {
-  public value: StateType
+  private actualValue: StateType
   protected subscriberhash: { [keys: string]: (s: StateType) => void }
 
   constructor (initialValue: StateType) {
-    this.value = initialValue
+    this.actualValue = initialValue
     this.subscriberhash = {}
   }
 
+  get value () {
+    return this.actualValue
+  }
+
+  set value (newValue: StateType) {
+    this.actualValue = newValue
+  }
+
   public next (state: StateType) {
-    this.value = state
+    this.actualValue = state
     for (const subscriber of this.observers) {
       subscriber(this.value)
     }
@@ -29,7 +37,7 @@ export class Subject<StateType> implements UsableSubject<StateType> {
   public subscribe (fn: (s: StateType) => void) {
     const id = Math.random().toString(32)
     this.subscriberhash[id] = fn
-    fn(this.value)
+    fn(this.actualValue)
     return { unsubscribe: () => { delete this.subscriberhash[id] } }
   }
 

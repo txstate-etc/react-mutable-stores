@@ -24,6 +24,7 @@ const initialState = { foo: 'bar', more: 'state' }
 const store = new Store(initialState)
 store.next({ ...initialState, foo: 'baz' })
 ```
+### SafeStore
 If it's not convenient to clone your own objects, you can use a `SafeStore` instead,
 which will allow you to mutate your state and then call next on it:
 ```typescript
@@ -32,9 +33,17 @@ const store = new SafeStore(initialState)
 initialState.foo = 'baz'
 store.next(initialState) // with a regular Store, this would not notify subscribers
 ```
-This will work on any objects that are Cloneable according to the lodash.clone()
-documentation.
-
+This is only designed to work on pure JSON (objects and arrays, not Maps, Sets, or any other data types).
+### WatchedStore
+For more convenience, you may opt to use a `WatchedStore`, which does not require you to call `.next()` at all. Instead, it uses Javascript's `Proxy` feature to collect all your mutations made in a synchronous block and automatically calls `.next` when you're finished. This style is a little bit more magical and could have minor performance implications, but it's also impossible to accidentally forget to call `.next()`, which could be helpful.
+```typescript
+const initialState = { foo: 'bar', myarray: [1, 3, 5] }
+const store = new WatchedStore(initialState)
+store.value.foo = 'baz'
+store.value.myarray.push(7)
+// subscribers will be notified once, here
+```
+Again, this is only designed to work on pure JSON (objects and arrays, not Maps, Sets, or any other data types).
 ### Subclassing / Mutation
 The most effective way to use a store is to subclass your own and create mutation
 methods. If you're familiar with redux, these methods would be similar to actions on
