@@ -137,7 +137,7 @@ const BookDetail: React.FC = props => {
 ```
 ### useDerivedStore
 Frequently, individual components only need to subscribe to a small portion of a store.
-If you've used Redux, it has the `useSelector` hook to deal with this. This library
+If you've used Redux toolkit, it has the `useSelector` hook to deal with this. This library
 uses the concept of a derived store instead.
 
 A derived store is a store that derives its state from another store. useDerivedStore
@@ -172,7 +172,7 @@ import { simpleStore } from './simplestore'
 const SimpleComponent: React.FC = props => {
   const [simpleState, updateSimpleState] = useAndUpdateStore(simpleStore)
   const onClick = useCallback(() =>
-    updateSimpleState(simpleState.count + 1),
+    updateSimpleState({ count: simpleState.count + 1 }),
     [simpleState, updateSimpleState]
   )
   return <>
