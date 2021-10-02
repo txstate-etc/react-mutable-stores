@@ -2,7 +2,7 @@ const { isArray } = Array
 
 type ObjectOrArray = Record<string, any> | Array<any>
 const clone = (objectOrArray: ObjectOrArray): ObjectOrArray =>
-  isArray(objectOrArray) ? Array.from(objectOrArray) : Object.assign({}, objectOrArray)
+  isArray(objectOrArray) ? Array.from(objectOrArray) : Object.assign(Object.create(null), objectOrArray)
 
 const pathSeperatorRegex = /\[\s*(['"])(.*?)\1\s*\]|(?:^|\.)\s*(\w+)\s*(?=\.|\[|$)|\[\s*(-?\d+)\s*\]/g
 
@@ -10,7 +10,7 @@ export function get<ReturnType = any> (root: any, path: string | number | (strin
   try {
     if (isArray(path)) path = "['" + path.join("']['") + "']"
     else if (path in root || typeof path === 'number') return root[path as string]
-    var obj = root
+    let obj = root
     path.replace(
       pathSeperatorRegex,
       // @ts-expect-error
@@ -52,7 +52,7 @@ export function set<T = ObjectOrArray> (
           ? clone(previousValue)
           : previousKeyIsArrayIndex
             ? []
-            : {}
+            : Object.create(null)
 
         // Now advance
         currentParent = currentParent[previousKey]
